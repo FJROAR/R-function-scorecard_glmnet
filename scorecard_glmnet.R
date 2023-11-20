@@ -1,4 +1,12 @@
-scorecard_glmnet <- function(bins, mod, lambda = 0){
+scorecard_glmnet <- function(bins, 
+                             model, 
+                             points0 = 600, 
+                             odds0 = 1/19, 
+                             pdo = 50,
+                             lambda = 0){
+  
+  library(scorecard)
+  
 
   #Inputs:
     #bins: Binning of the scorecard model
@@ -11,22 +19,23 @@ scorecard_glmnet <- function(bins, mod, lambda = 0){
   
   card = list()
   
+  b = pdo / log(2)
+  a = points0 + b * log(odds0)
+
   basepoints <- data.frame(variable = "basepoints",
                            bin = NA,
                            woe = NA,
-                           points =   600 - (-28.8539 * coef(mod, s = lambda)[1]) 
+                           points =   a - b * coef(model, s = lambda)[1] 
                            ) 
-  
   
   card[[1]] <- as.data.table(basepoints)
   variables <- vector("character", length(coef(mod, s = lambda)) - 1)
-    
   
-  for (i in c(2: length(coef(mod, s = lambda)))){
+  for (i in c(2: length(coef(model, s = lambda)))){
     
     bins[[(i - 1)]]$points = -bins[[(i - 1)]]$woe * 
       coef(mod, s = lambda)[i] *
-      28.8539
+      b
     
     card [[i]] = as.data.table(bins[[(i - 1)]])
     
